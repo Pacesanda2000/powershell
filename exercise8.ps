@@ -1,0 +1,91 @@
+#Loops - Foreach-Object
+# ... | Foreach-Object {<scriptBlock>}
+
+#Example: Zobraz mena servisov beziacich na systeme zelenou farbou
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"} | Select-Object -Property Name |
+Foreach-Object {Write-Host "$_" -ForegroundColor Green}
+
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"}|
+Foreach-Object {Write-Host "$($_.Name)" -ForegroundColor Green}
+
+#Example: Zastav servisy 
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"}|
+Foreach-Object {Stop-Service -Name $_.Name -WhatIf}
+
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"}|
+Foreach-Object {$PSItem | Stop-Service -WhatIf}
+
+
+#Loops - Foreach
+#syntax: Foreach ($item in $col) {<scriptBlock>}
+#Example: Zobraz mena servisov beziacich na systeme zelenou farbou
+
+$services = Get-service | Where-Object {$PSItem.Status -like "RUN*"}
+foreach ($item in $services){
+    Write-Host "$($item.Name)" -ForegroundColor Green
+}
+
+
+#Loops - For
+#syntax: For ($init; <Condition>;$op) {<scriptBlock>}
+#Example: Zobraz mena servisov beziacich na systeme zelenou farbou
+$services = Get-service | Where-Object {$PSItem.Status -like "RUN*"}
+for ($i=0; $i -lt $services.count; $i++){
+    Write-Host "$($Services[$i].Name)" -ForegroundColor Green
+}
+
+
+
+#IfElse condition
+#Syntax: if(condition){scriptCode}
+<#
+Syntax2: if(condition) {scriptCodeA}
+            else {scriptCodeB}.
+Syntax3 if(condition1) {scriptCodeA}
+            elseif(condition2){scriptCodeB}
+              else {scriptCodeC}
+#>
+
+#Example: Zobraz mena servisov beziacich na systeme zelenou farbou a mena ostatnych farbou cervenou
+$services = Get-service
+foreach ($item in $services){
+    if($item.Status -eq "Running"){
+        Write-Host "$($item.Name)" -ForegroundColor Green
+    }
+    else {Write-Host "$($item.Name)" -ForegroundColor Red}
+}
+
+
+#Example: Zobraz mena servisov, ktore maju bezat (Automatic) ale nebezia cervnou farbou
+Get-Service | Where-Object {$_.StartType -eq 'Automatic'} | Where-Object {$_.Status -ne 'Running'} 
+Get-Service | Where-Object {$_.StartType -eq 'Automatic' -AND $_.Status -ne 'Running'} |
+Foreach-Object {Write-Host "$($_.Name)" -ForegroundColor Red} 
+
+
+$services = Get-Service | Where-Object {$_.StartType -eq 'Automatic'} | Where-Object {$_.Status -ne 'Running'} 
+foreach($item in $services){
+    Write-Host "Tento Servis nebezi: $($item.Name)" -ForegroundColor Red
+    Write-Host "Pokusam sa spustit servis $($item.Name)"
+    Start-Service -inputObject $item
+}
+
+
+#INPUT/OUTPUT: Out FILE
+Get-command -Verb out
+
+Get-service | OUt-File -FilePath C:\Temp\services.txt -Force #prepise nasilu
+Test-Path -Path C:\Temp\services.txt
+Get-Content -Path C:\Temp\services.txt
+Get-Process | OUt-File -FilePath C:\Temp\services.txt -Append #prilozi
+
+#INPUT/OUTPUT: CSV
+Get-Service | Export-Csv -Path C:\Temp\services.csv -Force
+Test-Path -Path C:\Temp\services.csv
+Import-csv -LiteralPath C:\Temp\services.csv
+
+
+##INPUT/OUTPUT: XML
+Get-Service | Export-CliXml C:\Temp\services.xml
+Import-Clixml C:\Temp\services.xml | Select-Object -Property Name
+
+

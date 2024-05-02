@@ -1,0 +1,52 @@
+#Cyklus Foreach-Object
+#  ... | Foreach-Object - scriptblock {Code}
+<#
+koment cez viacero riadkov
+#>
+
+#Filtorvanie v Powershelle
+#0. Nativny Filtering
+Get-WmiObject -Class Win32_ComputerSystem
+Get-WmiObject -Class Win32_OperatingSystem
+Get-WmiObject -Class Win32_Bios
+
+Get-WmiObject -Class Win32_Service -Filter "StartMode='Auto'" 
+Get-WmiObject -Class Win32_Service | where-object {$_.StartMode -like "Auto*"} | sort-object -Property ProcessID
+
+#1. Where-Object
+Get-Service | Where-Object {StartType -eq -ne -lt -gt -le -ge -not -like}
+Get-Service | Where-Object {$_.StartType -like "Auto*"}
+Get-Service | Where-Object {$PSItem.StartType -like "Auto*"}
+Get-Service | Where-Object {$PSItem.Name -like "A*"}
+Get-Service | Where-Object {$_.DisplayName -like "Windows Update*"}
+Get-Service | Where-Object {$_.DisplayName -like "*Windows Update"}
+Get-Process | Where-Object {$PSItem.Id -lt 1000}
+Get-Process | Where-Object {$PSItem.Id -le 1000} | sort-object -Property ID -Descending
+Get-Process | Where-Object {$PSItem.Id -eq 1000}
+Get-Process | Where-Object {$PSItem.Id -le 1000} | sort-object -Property ProcessName 
+
+#1. Select-Object
+Get-Service | Select-Object -First 5 
+Get-Service | Select-Object -Last 5
+
+#Ex1: Vyfiltruj vsetky subory v uzivatelskom profile na PLOCHE vacsie ako 1MB
+Get-ChildItem -Path C:\Users\A200011758\Desktop -Recurse -File |
+Where-Object {$PSItem.Length -ge 1MB} | sort-object -Property LastWriteTime -Descending
+
+#Ex2: Zobrazit len 3 najvacsich suborov na ploche
+Get-ChildItem -Path C:\Users\A200011758\Desktop -Recurse -File | 
+Sort-Object -Property Lenght -Descending | Select-Object -First 3 
+
+#Ex2.1:
+Get-ChildItem -Path C:\Users\A200011758\Desktop -Recurse -File | 
+Sort-Object -Property Lenght -Descending | Select-Object -First 3 |
+Select-Object -Property Name,Lenght
+
+#Ex3: Zobrazit tieto info o OS: Meno, Verzia, InstallDate, LastBoot
+Get-ComputerInfo | Select-Object -Property OSName, OSVersion, OSInstallDate, OSLastBootUpTime
+
+#Ex4: Zobrazenie info z Ex3 cez format Table
+Get-ComputerInfo | Format-Table -Property OSName, OSVersion, OSInstallDate, OSLastBootUpTime
+
+#Ex5: Zobrazenie info z Ex3 cez format List
+Get-ComputerInfo | Format-List -Property OSName, OSVersion, OSInstallDate, OSLastBootUpTime, CSmodel 

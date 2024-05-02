@@ -1,0 +1,35 @@
+<#
+ctrl + j
+
+PS remote access ways:
+-ComputerName (RPC/DCOM)
+-PSRemoting (http)/5986(https)
+-CIM/WMI
+
+ (RPC)
+    Win32_Bios
+    Win32_ComputerSystem
+    Win32_OperatingSystem
+    Win32_Network*
+    Win32_Volume
+ 
+ (PSRemoting)
+    Win32_Bios
+    Win32_ComputerSystem
+    Win32_OperatingSystem
+    Win32_Network*
+    Win32_Volume
+
+    CIM: Get-CimInstance -class win32_*
+#>
+
+
+#Zadanie
+Get-CimInstance -class Win32_ComputerSystem |Select-Object -Property Model,Manufacturer
+Get-CimInstance -class Win32_BIOS | select-object -Property SerialNumber
+Get-CimInstance -class Win32_Volume | Select-Object FileSystem
+Get-CimInstance -class Win32_NetworkAdapter
+Get-WmiObject -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount=true" | Format-Table
+Get-CimInstance -class Win32_OperatingSystem | Select-Object -Property InstallDate,LastBootUpTime
+
+# get-SystemConfiguration ComputerName localhost,localhost | Export-CSV -path C:\Desktop\ExportCSV.txt --vypis funkcie

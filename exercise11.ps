@@ -1,0 +1,56 @@
+function Get-SystemConfiguration{
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+
+    [CmdletBinding()]
+
+    Param(
+        # Param1 Computer name or IP address to collect data
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [string[]]$ComputerName = $env:COMPUTERNAME
+    )
+
+    Begin{
+        Clear-Host
+        Write-Host "############################"
+        Write-Host "Name: Gathering system data"
+        Write-Host "Author: SLUKAC"
+        Write-Host "Version: 2.0"
+        Write-Host "############################"
+
+        $AllData = @()
+    }
+
+
+    Process{
+        foreach ($Computer in $ComputerName){
+        Write-host "Gathering Data from computer $Computer"
+            #if(Test-WSMAN -ComputerName $item){
+            if(Test-Connection -ComputerName $Computer -Quiet -count 1){
+                $OSData = Get-WmiObject -ComputerName $Computer -Class win32_OperatingSystem | 
+                Select-Object -Property Caption,Version
+                $OSData
+
+                $BiosData = Get-WmiObject -ComputerName $Computer -Class win32_Bios | 
+                Select-Object -Property Name,SerialNumber
+                $BiosData
+            }
+        }
+    }
+
+
+
+    End{
+            Write-Host "Code activity completed"
+    }
+} 

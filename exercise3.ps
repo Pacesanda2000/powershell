@@ -1,0 +1,33 @@
+
+#Loops - Foreach-object
+# ... | Foreach-object (<scriptblock>)
+
+#Example: Zobraz mena systemov beziacich na systeme zelenou farbou
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"} | Foreach-Object {write-host "$($_.Name)" -ForegroundColor Green}
+
+#Example: Zastav servisy
+Get-Service | Where-Object {$PSItem.Status -like "RUN*"} | Foreach-Object {stop-service -Name $_.Name -WhatIf}
+
+#Loops - Foreach
+#syntax: Foreach ($item in $col) (<scriptblock>)
+#Example: Zobraz mena systemov beziacich na systeme zelenou farbou
+
+$services = get-service | where-object {$PSItem.Status -like "RUN"}
+foreach ($item in $services){
+    write-host "$($item.Name)" -ForegroundColor Green
+}
+
+#Loops - For
+#syntax: For ($init: <condition>;$op) (<scriptblock>)
+#Example: Zobraz mena systemov beziacich na systeme zelenou farbou
+$services = get-service | where-object {$PSItem.Status -like "RUN"}
+for ($i=0; $i -lt $services.count; $i++){Write-host "$($services[$i].Name)" -ForegroundColor Green}
+
+#IfElse condition
+#syntax: if(condition){scriptCode}
+#<
+#syntax2: if(condition) {scriptCodeA}
+            else {scriptCodeB}
+
+#>
+#Example: Zobraz mena servisov beziach na systeme zelenou farbou a mena ostatnych farbou cervenou

@@ -1,0 +1,63 @@
+#Zadanie úlohy: COMPUTERINFO
+
+#Import serverov z nacitaneho suboru
+
+    $servers = Get-Content -Path C:\Temp\Servers.txt #pouzival som PATH ktora plati pre moj pc <C:\Users\A200011758\Desktop\servers.txt>
+
+#Loop pre kazdy server v subore
+
+    foreach ($server in $servers){}
+
+#Zbieranie dat a formatovanie vystupu
+
+    GEt-ComputerInfo -Property CSModel, OsInstallDate, OSLastBootUpTime, OSversion | Format-List
+
+#Testovanie connectivity
+
+    if(Test-Connection -ComputerName $server -Count 1 -Quiet){}
+    else{}
+
+<#Info pre pouzivatela ohladom servera, ak server viem pingnut, vypise mi jeho nazov na zeleno + info v  deafault farbe
+                                        ak sevrer nevie pingnut, vypise mi jeho nazov na cerveno + info v deafault farbe  
+#>  
+  
+    Write-Host "Server s nazvom:" "$server" -ForegroundColor Green
+    Write-Host "Server s nazvom:" "$server" -ForegroundColor Red
+
+#Pre vsetky servery
+
+    Invoke-Command -ComputerName $server -ScriptBlock{}
+
+#Riesenie pre vsetky servery:
+
+$servers = Get-Content -Path C:\Users\A200011758\Desktop\servers.txt
+     foreach ($server in $servers){
+         if(Test-Connection -ComputerName $server -Count 1 -Quiet){
+              Invoke-Command -ComputerName $server -ScriptBlock{
+                  Write-Host "Server s nazvom:" "$server" -ForegroundColor Green
+                  GEt-ComputerInfo -Property CSModel, OsInstallDate, OSLastBootUpTime, OSversion | Format-List
+                  }
+         }
+         else{
+             
+              Write-Host "Server s nazvom:" "$server" -ForegroundColor Red
+              GEt-ComputerInfo -Property CSModel, OsInstallDate, OSLastBootUpTime, OSversion | Format-List      
+         }
+      }
+
+
+#Riesenie pre localusera:
+
+    $servers = Get-Content -Path C:\Users\A200011758\Desktop\servers.txt
+     foreach ($server in $servers){
+         if(Test-Connection -ComputerName $server -Count 1 -Quiet){
+              Write-Host "Server s nazvom:" "$server" -ForegroundColor Green
+              GEt-ComputerInfo -Property CSModel, OsInstallDate, OSLastBootUpTime, OSversion | Format-List
+              }
+         else{
+              Write-Host "Server s nazvom:" "$server" -ForegroundColor Red
+              GEt-ComputerInfo -Property CSModel, OsInstallDate, OSLastBootUpTime, OSversion | Format-List
+         }
+      }
+
+           

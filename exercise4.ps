@@ -1,0 +1,95 @@
+#function Get-ComputerINfo{
+
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+
+    [CmdletBinding()]
+
+    Param(
+        # Param1 help description
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [string[]]$ComputerName = $env:COMPUTERNAME,
+
+        # Param2 Switch for file output
+        [Parameter(Mandatory=$false)]
+        [switch]$ExportXML= $false
+    )
+
+    Begin{
+        Clear-Host
+        
+        Write-host "#################################"
+        Write-Host "Name: Gathering Data about system"
+        Write-Host "Author: Dmajoros"
+        Write-Host "Version: .0"
+        Write-Host "Date: 09/02/2023"
+        Write-host "#################################"
+
+        $allComputers = @()
+
+        $x = 1
+        $y = $ComputerName.Count
+    }
+    Process{
+        foreach ($computer in $ComputerName){
+            if(Test-Connection -ComputerName $computer -Quiet -Count 1){
+            #if(Test-WSMan -ComputerName $computer){
+                Write-Host "Gathering data from server $computer ...progress [$x|$y]"
+                $BiosData = Get-WmiObject -ComputerName $computer -Class win32_Bios |
+                Select-Object -Property Name,SerialNumber
+                $OSData = Get-WmiObject -ComputerName $computer -Class win32_OperatingSystem |
+                Select-Object -Property Version,Caption 
+                $IPData = Get-NetIPAddress -AddressFamily IPV4 | Select IPAddress | Where-Object {$_.IPaddress -like "10.*"}
+                try{
+                $VolumeData = Get-volume -ComputerName $computer -DriveLetter C | Select-Object @{n='FreeSpace[%]';e={[math]::Round($_.SizeRemaining/$_.Size*100,2)}}
+                }
+                catch{
+                Write-host "Volume C: does not exist." -ForegroundColor Blue
+                }
+
+
+                $OneServer = [PSCustomObject]@{
+                    ComputerName     = $computer
+                    BiosVersion = $BiosData.Name
+                    BiosSerialNo = $BiosData.SerialNumber
+                    OSName    = $OSData.Caption
+                    OSVersion = $OSData.Version
+                    IPAddress  =$IPData.IPAddress 
+                    FreeVolume = $VolumeData.'FreeSpace[%]'
+                }
+
+                $allComputers += $OneServer
+            }
+                $x++
+        }
+
+    }
+    End{
+        Write-host "Script execution complete"
+        Write-Output $allComputers
+
+        if($ExportXML){
+            $allComputers | Export-CliXML C:\Temp\Output.xml -force
+            Write-Host "Export file was created in C:\Temp\Output.xml" -ForegroundColor Yellow
+        }
+    }
+#} 
+
+
+#Get-volume -DriveLetter C | Select-Object DriveLetter,FileSystem,@{n='FreeSpace[%]';e={$_.SizeRemaining/$_.Size*100}} 
+#$volumeC = Get-volume -DriveLetter C | Select-Object @{n='FreeSpace[%]';e={[math]::Round($_.SizeRemaining/$_.Size*100,2)}} 
+#$volumeC
+
+#$IP = Get-NetIPAddress -AddressFamily IPV4 | Select IPAddress | Where-Object {$_.IPaddress -like "10.*"}
+
+#Get-volume -DriveLetter C | Select-Object DriveLetter,FileSystem,@{n='FreeSpace[%]';e={$_.SizeRemaining/$_.Size*100}}

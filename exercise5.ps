@@ -1,0 +1,74 @@
+function Get-SystemConfiguration{
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+
+    [CmdletBinding()]
+    Param
+    (
+        # Param1 Computer name or IP address to collect data
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [string[]]$ComputerName = $env:COMPUTERNAME,   # [string[]] -- spravilo nam z $ComputerName pole
+
+        #Param2 Format output
+        [Parameter(Mandatory=$false)]
+        [switch]$ExportCSV = $false
+    )
+
+    Begin{
+        Clear-Host
+        Write-Host "#############################"
+        Write-Host "Name: Gathering system data"
+        Write-Host "Author: RROSAK"
+        Write-Host "Version: 2.0"
+        Write-Host "#############################"
+
+        $AllData = @()
+    }
+
+
+    Process{
+    foreach ($Comp in $ComputerName){
+        if(Test-Connection -ComputerName $Comp -Quiet -Count 1){
+            
+            $OSData = Get-WmiObject -ComputerName $Comp -class win32_OperatingSystem | Select-Object -Property Caption, Version
+            $BiosData = Get-WmiObject -ComputerName $Comp -class win32_Bios | Select-Object -Property Name, SerialNumber
+
+            $OneServerData = [PSCustomObject]@{
+                ComputerName   = $Computer
+                BiosVersion    = $BiosData.Name
+                SerialNo       = $BiosData.SerialNumber
+                OSName         = $OSData.Caption
+                OSVersion      = $OSData.Version
+            }
+            $AllData += $OneServerData
+
+        }
+    }
+    }
+
+
+    End{
+
+        Write-Host "Final results from data gathering:"
+        Write-Output $AllData
+
+        if($ExportCSV){
+            $AllData | Export-CSV -Path C:\Temp\Data.csv -NoClobber -NoTypeInformation
+            Write-Host "Your data has been stored into C:\Temp\Data.csv"
+        }
+    }
+}
+
+
+
+#https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-pscustomobject?view=powershell-7.3

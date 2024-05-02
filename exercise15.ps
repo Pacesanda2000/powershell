@@ -1,0 +1,57 @@
+function Get-ComputerINfo{
+
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+
+    [CmdletBinding()]
+
+    Param(
+        # Param1 help description
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [string[]]$ComputerName = $env:COMPUTERNAME
+    )
+
+    Begin{
+        Clear-Host
+        
+        Write-host "#################################"
+        Write-Host "Name: Gathering Data about system"
+        Write-Host "Author: SLUkac"
+        Write-Host "Version: 2.0"
+        Write-Host "Date: 07/02/2023"
+        Write-host "#################################"
+
+        $allComputers = @()
+
+        $x = 1
+        $y = $ComputerName.Count
+    }
+    Process{
+        foreach ($computer in $ComputerName){
+            if(Test-Connection -ComputerName $computer -Quiet -Count 1){
+            #if(Test-WSMan -ComputerName $computer){
+                Write-Host "Gathering data from server $computer ...progress [$x|$y]"
+                Get-WmiObject -ComputerName $computer -Class win32_Bios |
+                Select-Object -Property Name,SerialNumber
+                Get-WmiObject -ComputerName $computer -Class win32_OperatingSystem |
+                Select-Object -Property Version,Caption 
+            }
+                $x++
+        }
+
+    }
+    End{
+        Write-host "Script execution complete"
+        #Write-Output $allComputers
+    }
+} 

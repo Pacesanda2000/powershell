@@ -1,0 +1,70 @@
+#Hashtable
+# hash=@{key=value;key2=value}
+$personal = @{Name="Stanislav";Surname="Lukac"}
+$personal.Add('age','18')
+
+
+Get-volume -DriveLetter C | Select-Object DriveLetter,FileSystem,@{n='FreeSpace[%]';e={$_.SizeRemaining/$_.Size*100}}
+$volumeC = Get-volume -DriveLetter C | Select-Object DriveLetter,FileSystem,@{n='FreeSpace[%]';e={[math]::Round($_.SizeRemaining/$_.Size*100,2)}}
+$volumeC | format-list
+#1) Nacitanie server listu
+$servers = get-content C:\TEMP\Servers.txt
+
+#2) Ziskanie cielovych informacii o volume C na referencnom systeme
+$volumeC = Get-volume -DriveLetter C | Select-Object DriveLetter,FileSystem,@{n='FreeSpace[%]';e={[math]::Round($_.SizeRemaining/$_.Size*100,2)}},
+@{n='Size[GB]';e={[math]::Round($_.Size/1Gb,2)}},
+@{n='FreeSpace[GB]';e={[math]::Round($_.SizeRemaining/1Gb,2)}}
+
+#3) Ziskanie informacie z ostatnych systemov a vypis do konzoly
+foreach ($server in $servers){
+    Invoke-Command -ComputerName $server -ScriptBlock{
+        Get-volume -DriveLetter C | Select-Object DriveLetter,@{n='FreeSpace[%]';e={[math]::Round($_.FreeSpace/$_.Capacity*100,2)}},
+        @{n='Size[GB]';e={[math]::Round($_.Capacity/1Gb,2)}},
+        @{n='FreeSpace[GB]';e={[math]::Round($_.FreeSpace/1Gb,2)}}
+    }
+}
+
+
+Get-WMIobject -Class win32_Volume -ComputerName '127.0.0.1','BE2AQ088','localhost'
+#Zobraz DriveLetter + Capacity[GB] + FreeSpace[GB] + FreeSpace[%]
+foreach ($server in $servers){
+        Get-WMIobject -Class win32_Volume -ComputerName $Server | Where-Object {$_.DriveLetter -eq "C:"} | Select-Object PSComputerName,DriveLetter,@{n='FreeSpace[%]';e={[math]::Round($_.FreeSpace/$_.Capacity*100,2)}},
+        @{n='Size[GB]';e={[math]::Round($_.Capacity/1Gb,2)}},
+        @{n='FreeSpace[GB]';e={[math]::Round($_.FreeSpace/1Gb,2)}},
+        @{n='ComputerName';e={$server}}
+}
+
+
+
+#Vytvor PS code (konzolova aplikacia), ktora zobrazi stav sluzby zadanej od uzivatela na viacerych pocitacov
+#nacitanych zo suboru serverlist.txt
+
+
+#1) Nacitanie server listu
+$servers = get-content C:\Users\A200011758\Desktop\servers.txt
+
+#2) Nacitanie sluzby
+$UserInput = Read-Host "Zadaj meno SERVISU:"
+$SelectedService = Get-Service -Name $UserInput
+
+#3) Vypis stav sluzby na danom pocitaci do konzoly
+Write-Output $SelectedService
+
+#4) Vypis stavu sluzby pre vsetky pocitace
+foreach ($server in $servers){
+    $SelectedService = Get-Service -Name $UserInput -ComputerName $server
+    Write-Output $SelectedService
+}
+
+
+$servers = get-content C:\TEMP\Servers.txt
+$UserInput = Read-Host "Zadaj meno SERVISU:"
+foreach ($server in $servers){
+    #Write-Host "Vypis stavu sluzby $UserInput na systeme $Server" -ForegroundColor Cyan
+    $SelectedService = Get-Service -Name $UserInput -ComputerName $server
+    Write-Output $SelectedService | format-Table MachineName,Name,DisplayName
+}
+
+
+
+Get-WmiObject -Class Win32_Process  | select-object -Property Name, ProcessID, Path, CreationDate  | select-object -First 5 

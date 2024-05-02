@@ -1,0 +1,78 @@
+function Get-SystemConfiguration{
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+
+#https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-pscustomobject?view=powershell-7.3
+
+    [CmdletBinding()]
+
+    Param(
+        # Param1 Computer name or IP address to collect data
+        [Parameter(Mandatory=$false,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [string[]]$ComputerName = $env:COMPUTERNAME,
+
+        # Param2 Format output
+        [Parameter(Mandatory=$false)]
+        [switch]$ExportCSV = $false
+    )
+
+    Begin{
+        Clear-Host
+        Write-Host "############################"
+        Write-Host "Name: Gathering system data"
+        Write-Host "Author: SLUKAC"
+        Write-Host "Version: 3.0"
+        Write-Host "############################"
+
+        $AllData = @()
+    }
+
+
+    Process{
+        foreach ($Computer in $ComputerName){
+        Write-host "Gathering Data from computer $Computer"
+            #if(Test-WSMAN -ComputerName $item){
+            if(Test-Connection -ComputerName $Computer -Quiet -count 1){
+                $OSData = Get-WmiObject -ComputerName $Computer -Class win32_OperatingSystem | 
+                Select-Object -Property Caption,Version
+
+                $BiosData = Get-WmiObject -ComputerName $Computer -Class win32_Bios | 
+                Select-Object -Property Name,SerialNumber
+
+
+                $OneServerData = [PSCustomObject]@{
+                    ComputerName     = $Computer
+                    BiosVersion      = $BiosData.Name
+                    SerialNo         = $BiosData.SerialNumber
+                    OSName           = $OSData.Caption
+                    OSVersion        = $OSData.Version
+                }
+
+                $AllData += $OneServerData
+
+            }
+        }
+    }
+
+
+
+    End{
+            Write-Host "Final data information from all systems::"
+            Write-Output $AllData
+
+            if($ExportCSV){
+                $Alldata | Export-CSV -Path C:\Temp\DataExport.csv -NoClobber -NoTypeInformation -Force
+                Write-Host "Your data has been stored into C:\Temp\DataExport.csv" -ForegroundColor Yellow
+            }
+    }
+} 

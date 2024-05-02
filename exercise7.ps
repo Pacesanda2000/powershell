@@ -1,0 +1,64 @@
+# Object processing v PowerShell
+<# 1.   Zbieranie Dat (Get-*)
+   2.   Filtrovanie Dat (Select-Object + Where-Object)
+   [3.] Zoradovanie (Sort-Object)
+   [4.] "Meranie" (Measure-Object)
+   [5.] Output / Formatovanie (Format-List a Format-Table)
+#>
+
+# Programmer FRAMEWORK
+<# 1.   Rozdelenie ulohy na najmnsie celky, ktore viem riesit
+   2.   Zoradenie uloh podla naveznosti/suvislosti
+   3.   Najst prislny cmdlet
+   4.   Priebezne testovat vysledok spojeny s dielcimi ulohami
+   5.   Pokryt vystup (podla zadanie a podla adresata)
+#>
+
+
+#Zadanie: Chce zistit pocet suborov,najvacsi, najmensi a ich celkovu velkost subor v ceste X (pripadne priemernu velkost suboru)
+Get-ChildItem -Path C:\TEMP\ -File | Measure-Object -Property Length -Sum -Average -Maximum -Minimum
+
+
+#Premenne v PS
+#Deklarovanie premennej: [Type]$<Meno_Premennej> = <Hodnota>
+[int]$a = 5
+[string]$b = 'Ahoj Powershell'
+[boolean]$Check = $true
+$d = '10'
+$d.GetType()
+
+$VEK = Read-Host "Zadaj svoj vek:"
+[int]$VEK = Read-Host "Zadaj svoj vek:"
+
+[int]$a = Read-Host "Zadaj prvu hodnotu:"
+[int]$b = Read-Host "Zadaj druhu hodnotu:"
+$c = $a + $b
+
+Write-Host "Vysledok scitania je $c"
+
+[string]$string = 'Mam rad PowerShell'
+[string[]]$string = 'Mam rad PowerShell','Mam rad Python'
+Get-Variable
+New-Variable -Name dEMO -Value 1
+New-Variable -Name Max -Value 256 -Option ReadOnly
+$a = $null
+Clear-Variable -Name c
+Remove-Variable -Name c #nahradenie premennej
+
+
+#Polia v PS
+#SKalarne pole
+[string[]]$string = 'Mam rad PowerShell','Mam rad Python'  #pole retazcov
+[int[]]$number = 1,2,3,4,5    #pole cisel
+$number = 1,2,3,4,5    #pole cisel
+$services = Get-Service    #pole objektov
+$pole = @()    #vytvorenie prazdneho skalarneho pola
+$pole += $services[0]     #Pridavanie objektov do pola
+$a = 'ahoj'
+Clear-Variable -Name $a    #Vymazanie obsahu premennej a
+$a = $null       #Vymazanie obsahu premennej
+$a = $null
+
+Write-Host "Meno prveho servisu je $($services[0].Name) a jeho status je $($Services[0].Status)" 
+
+
